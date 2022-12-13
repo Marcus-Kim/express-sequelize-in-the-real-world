@@ -71,6 +71,25 @@ router.get('/', async (req, res, next) => {
     const where = {};
 
     // Your code here
+    if(req.query.firstName){
+        where.firstName = {[Op.like]:`%${req.query.firstName}%`}
+    }
+
+    if(req.query.lastName){
+        where.lastName = {[Op.like]:`%${req.query.lastName}%`}
+    }
+
+    if(req.query.lefty === 'true'){
+        where.leftHanded = true;
+    }else if(req.query.lefty === 'false'){
+        where.leftHanded = false;
+    }else if(req.query.lefty){
+        errorResult.errors.push({
+            message:"Lefty should be either true or false"
+        })
+    }else{
+        where.leftHanded = {[Op.or]:[true, false]}
+    }
 
 
     // Phase 2C: Handle invalid params with "Bad Request" response
@@ -100,8 +119,8 @@ router.get('/', async (req, res, next) => {
     // Phase 3A: Include total number of results returned from the query without
         // limits and offsets as a property of count on the result
         // Note: This should be a new query
-    result.count = await Student.count();
 
+    result.count = await Student.count({where});
     result.rows = await Student.findAll({
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
         where,
@@ -109,7 +128,8 @@ router.get('/', async (req, res, next) => {
         order: [['lastName'], ['firstName']],
         ...pagination
     });
-
+    console.log(result.rows);
+    // result.count = result.rows.length;
     // Phase 2E: Include the page number as a key of page in the response data
         // In the special case (page=0, size=0) that returns all students, set
             // page to 1
