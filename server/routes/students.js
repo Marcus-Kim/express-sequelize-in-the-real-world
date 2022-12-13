@@ -76,6 +76,7 @@ router.get('/', async (req, res, next) => {
     // Phase 2C: Handle invalid params with "Bad Request" response
     if(errorResult.errors.length){
         res.status(400);
+        errorResult.count = await Student.count();
         return res.json(errorResult);
     }
     // Phase 3C: Include total student count in the response even if params were
@@ -99,6 +100,7 @@ router.get('/', async (req, res, next) => {
     // Phase 3A: Include total number of results returned from the query without
         // limits and offsets as a property of count on the result
         // Note: This should be a new query
+    result.count = await Student.count();
 
     result.rows = await Student.findAll({
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
@@ -137,6 +139,7 @@ router.get('/', async (req, res, next) => {
             }
         */
     // Your code here
+    result.pageCount = Math.ceil(result.count/size); // ceil = round up --- floor = round down
 
     res.json(result);
 });
