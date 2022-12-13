@@ -9,8 +9,16 @@ const { Supply } = require('../db/models');
 router.get('/category/:categoryName', async (req, res, next) => {
     // Phase 1C:
         // Find all supplies by category name
-        // Order results by supply's name then handed
+        const { categoryName } = req.params
+        const category = await Supply.findAll({
+            where: {
+                category: categoryName
+            },
+            // Order results by supply's name then handed
+            order: [['name'], ['handed']]
+        })
         // Return the found supplies as the response body
+        res.json(category);
     // Phase 8A:
         // Include Classroom in the supplies query results
         // Order nested classroom results by name first then by supply name
