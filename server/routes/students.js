@@ -12,9 +12,35 @@ router.get('/', async (req, res, next) => {
 
     // Phase 2A: Use query params for page & size
     // Your code here
+    let {page, size} = req.query;
+    if(!page){
+        page = 1;
+    }else{
+        page = +page;
+    };
+    if(!size){
+        size = 10;
+    }else{
+        size = +size;
+    }
+    const pagination = {};
 
+    if(page === 0 && size ===0){
+        const students = await Student.findAll();
+        page = 1;
+        return res.json(students);
+    }else if(page >= 1 && size >= 1){
+        pagination.limit = size;
+        pagination.offset = size * (page - 1);
+        console.log(pagination);
+    } else{
+        errorResult.errors.push({
+            message:'Requires valid page and size params'
+        })
+    }
     // Phase 2B: Calculate limit and offset
     // Phase 2B (optional): Special case to return all students (page=0, size=0)
+
     // Phase 2B: Add an error message to errorResult.errors of
         // 'Requires valid page and size params' when page or size is invalid
     // Your code here
@@ -48,6 +74,10 @@ router.get('/', async (req, res, next) => {
 
 
     // Phase 2C: Handle invalid params with "Bad Request" response
+    if(errorResult.errors.length){
+        res.status(400);
+        return res.json(errorResult);
+    }
     // Phase 3C: Include total student count in the response even if params were
         // invalid
         /*
@@ -74,12 +104,14 @@ router.get('/', async (req, res, next) => {
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
         where,
         // Phase 1A: Order the Students search results
-        order: [['lastName'], ['firstName']]
+        order: [['lastName'], ['firstName']],
+        ...pagination
     });
 
     // Phase 2E: Include the page number as a key of page in the response data
         // In the special case (page=0, size=0) that returns all students, set
             // page to 1
+
         /*
             Response should be formatted to look like this:
             {
@@ -88,6 +120,7 @@ router.get('/', async (req, res, next) => {
             }
         */
     // Your code here
+            result.page = page;
 
     // Phase 3B:
         // Include the total number of available pages for this query as a key
