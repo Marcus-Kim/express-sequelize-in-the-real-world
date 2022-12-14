@@ -37,7 +37,30 @@ router.get('/', async (req, res, next) => {
     const where = {};
 
     // Your code here
+    if(req.query.name){
+        where.name = {
+            [Op.like]:`%${req.query.name}%`
+        }
+    }
 
+    if(req.query.studentLimit){
+        const limits = req.query.studentLimit.split(',');
+        if(limits.length !== 2 || +limits[0] > +limits[1]){
+            errorResult.errors.push({
+                message:"Student Limit should be two numbers: min,max"
+            })
+        }else{
+            where.studentLimit = {
+                [Op.between]:limits
+            }
+        }
+    }
+
+    if(errorResult.errors.length){
+        res.status(400);
+        res.message = "Student Limit should be an integer";
+        return res.json(errorResult);
+    }
     const classrooms = await Classroom.findAll({
         attributes: ['id', 'name', 'studentLimit'],
         where,
